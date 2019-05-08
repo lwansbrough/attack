@@ -2,6 +2,11 @@
 
 🧪 This project is to be considered experimental for now. Note it does not have a license.
 
+## Contributions
+Because this app is in the early stages of development, every aspect of it is subject to change. Plugin contributions that utilize the APIs as they exist are welcome, but please recognize that the API at this time is very fluid.
+
+For feature/API requests, please create an issue before attempting to submit a pull request.
+
 ## Development
 
 To run the development version of the project you only have to run:
