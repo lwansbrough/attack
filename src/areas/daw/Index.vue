@@ -1,8 +1,7 @@
 <template>
   <div id="app">
     <div v-if="project">
-      <div
-        class="">
+      <div>
         {{ projectName }} ({{ project.id }})
       </div>
       <playback-controls/>
@@ -52,12 +51,12 @@ export default {
         abletonPush2: {
           name: 'Ableton Push 2',
           version: '1.0.0',
-          src: 'http://localhost:8080/plugin.html'
+          src: 'http://localhost:8080/ableton-push-2.html'
         },
         test: {
           name: 'Push 2 Test',
           version: '1.0.0',
-          src: 'http://localhost:8081/push2-test.html'
+          src: 'http://localhost:8080/push2-test.html'
         }
       }
     }
