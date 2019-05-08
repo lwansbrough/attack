@@ -1,0 +1,21 @@
+@import './responsive.scss';
+
+p {
+  line-height: 1.4rem;
+}
+
+h1, h2 {
+  font-weight: normal;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: $font-weight-medium;
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: $font-weight-medium;
+  margin: 0;
+}

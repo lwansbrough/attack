@@ -1,0 +1,76 @@
+@import './variables.scss';
+
+.btn-group {
+  display: flex;
+  flex-direction: row;
+
+  .btn {
+    margin: 0 0.5rem;
+  }
+}
+
+button, .btn {
+  display: flex;
+  flex-direction: row;
+  background-color: $foreground-color;
+  border-radius: 1.25rem;
+  color: $text-color;
+  cursor: pointer;
+  height: 2rem;
+  line-height: 2rem;
+  padding: 0 1rem;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  transition: transform 0.2s ease-in-out;
+  transform: scale(1);
+  white-space: nowrap;
+
+  &:hover, &:focus {
+    outline: none;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.btn-with-icon {
+    padding: 0 1rem 0 0;
+
+    .icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: darken($foreground-color, 5%);
+      border-radius: 50%;
+      min-height: 2rem;
+      min-width: 2rem;
+      height: 2rem;
+      width: 2rem;
+      margin-right: 0.625rem;
+
+      > svg {
+        height: 1.125rem;
+        width: 1.125rem;
+
+        path {
+          fill: $text-color;
+        }
+      }
+    }
+  }
+
+  &.btn-primary {
+    background-color: $color-primary;
+
+    &.btn-with-icon {
+      .icon {
+        background-color: darken($color-primary, 5%);
+      }
+    }
+  }
+
+  &.btn-disabled {
+    cursor: default;
+    opacity: $opacity-disabled;
+  }
+}

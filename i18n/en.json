@@ -1,0 +1,10 @@
+{
+  "actions.createApp": "Create App",
+  "actions.requestAds": "Request Ads",
+  "actions.saveChanges": "Save Changes",
+  "navigation.createApplication": "Create an Application",
+  "navigation.getStarted": "Get Started",
+  "navigation.developers": "Developers",
+  "navigation.documentation": "Documentation",
+  "navigation.exploreGraph": "Explore Graph"
+}

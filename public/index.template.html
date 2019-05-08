@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html data-vm-ssr {{{ meta.inject().htmlAttrs.text() }}}>
+
+<head>
+  {{{ meta.inject().meta.text() }}}
+  {{{ meta.inject().title.text() }}}
+  {{{ meta.inject().link.text() }}}
+  {{{ meta.inject().style.text() }}}
+  {{{ meta.inject().script.text() }}}
+  {{{ meta.inject().noscript.text() }}}
+
+  <link rel="manifest" href="/manifest.json">
+</head>
+
+<body {{{ meta.inject().bodyAttrs.text() }}}>
+  <script src="/public/vendor/caja/caja.js"></script>
+  <script>
+    caja.initialize()
+  </script>
+  <!--vue-ssr-outlet-->
+  {{{ meta.inject().script.text({ body: true }) }}}
+</body>
+
+</html>

@@ -1,0 +1,64 @@
+@import './variables.scss';
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+  border: none;
+}
+
+label:not(.description) {
+  font-size: 0.9375rem;
+  font-weight: $font-weight-medium;
+  color: $text-color;
+}
+
+label.description {
+  font-size: 0.75rem;
+  color: $color-primary-muted;
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: row;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem;
+
+  input[type="text"] {
+    width: 100%;
+  }
+}
+
+input, textarea {
+  outline-color: $color-primary;
+  outline-width: 2px;
+  -moz-outline-radius: 0.25rem;
+}
+
+input[type="text"], textarea {
+  background-color: darken($foreground-color, 15%);
+  border: none;
+  border-radius: 0.1875rem;
+  color: $text-color;
+  height: 2.5rem;
+  font-size: 1rem;
+  padding: 0.5rem;
+  width: 12rem;
+}
+
+textarea {
+  height: auto;
+  width: auto;
+}
+
+input[type="text"]::placeholder {
+  color: lighten($foreground-color, 15%);
+}

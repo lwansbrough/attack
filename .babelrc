@@ -1,0 +1,19 @@
+{
+  "presets": [
+    ["env", {
+      "modules": false,
+      "targets": {
+        "node": "current"
+      }
+    }],
+    "stage-2"
+  ],
+  "plugins": [
+    "dynamic-import-webpack",
+    "syntax-dynamic-import"
+  ],
+  "env": {
+    "test": {
+      "presets": ["env", "stage-2"]    }
+  }
+}
