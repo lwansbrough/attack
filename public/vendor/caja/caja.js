@@ -23,83 +23,83 @@
  */
 
 var caja = (function () {
-  var cajaBuildVersion = 'v6013-es53'
-  var defaultServer = 'https://caja.appspot.com/'
-  var defaultFrameGroup
-  var readyQueue = []
-  var registeredImports = []
-  var nextId = 0
+  var cajaBuildVersion = 'v6013-es53-1-g3d832ff5';
+  var defaultServer = 'https://caja.appspot.com/';
+  var defaultFrameGroup;
+  var readyQueue = [];
+  var registeredImports = [];
+  var nextId = 0;
 
-  var UNREADY = 'UNREADY', PENDING = 'PENDING', READY = 'READY'
-  var state = UNREADY
-  var globalConfig = undefined
+  var UNREADY = 'UNREADY', PENDING = 'PENDING', READY = 'READY';
+  var state = UNREADY;
+  var globalConfig = undefined;
 
-  var GUESS = 'GUESS'
+  var GUESS = 'GUESS';
 
-  var ajaxCounter = 1
-  var unsafe = false
+  var ajaxCounter = 1;
+  var unsafe = false;
 
-  var loaderDocument
-  function proxyFetchMaker (proxyServer) {
+  var loaderDocument;
+  function proxyFetchMaker(proxyServer) {
     return function (url, mime, callback) {
       if (!url) {
-        callback(undefined)
-        return
+        callback(undefined);
+        return;
       }
-      var rndName = 'caja_ajax_' + ajaxCounter++
+      var rndName = 'caja_ajax_' + ajaxCounter++;
       window[rndName] = function (result) {
         try {
-          callback(result)
+          callback(result);
         } finally {
           // GC yourself
-          window[rndName] = undefined
+          window[rndName] = undefined;
         }
-      }
+      };
       // TODO(jasvir): Make it so this does not pollute the host page
       // namespace but rather just the loaderFrame
       installSyncScript(rndName,
-        (proxyServer ? String(proxyServer) : caja['server']) +
-        '/cajole?url=' + encodeURIComponent(url.toString()) +
-        '&input-mime-type=' + encodeURIComponent(mime) +
-        '&transform=PROXY' +
-        '&callback=' + encodeURIComponent(rndName) +
-        '&alt=json-in-script')
-    }
+        (proxyServer ? String(proxyServer) : caja['server'])
+        + '/cajole?url=' + encodeURIComponent(url.toString())
+        + '&input-mime-type=' + encodeURIComponent(mime)
+        + '&transform=PROXY'
+        + '&callback=' + encodeURIComponent(rndName)
+        + '&alt=json-in-script');
+    };
   }
 
-  function xhrFetcher (url, mime, callback) {
-    var request = new XMLHttpRequest()
-    request.open('GET', url.toString(), true)
-    request.overrideMimeType(mime)
-    request.onreadystatechange = function () {
-      if (request.readyState == 4) {
-        callback({ 'html': request.responseText })
+  function xhrFetcher(url, mime, callback) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url.toString(), true);
+    request.overrideMimeType(mime);
+    request.onreadystatechange = function() {
+      if(request.readyState == 4) {
+        callback({ "html": request.responseText });
       }
-    }
-    request.send()
+    };
+    request.send();
   }
 
   var uriPolicies = {
     'net': {
       'rewriter': {
-        'NO_NETWORK': function () { return null },
-        'ALL': function (uri) { return String(uri) }
+        'NO_NETWORK': function () { return null; },
+        'ALL': function (uri) { return String(uri); }
       },
       'fetcher': {
         'USE_XHR': xhrFetcher,
         'USE_AS_PROXY': proxyFetchMaker
       },
       'NO_NETWORK': {
-        'rewrite': function () { return null },
-        'fetch': function (url, mime, callback) {
-          setTimeout(function () {
+        'rewrite': function () { return null; },
+        'fetch': function(url, mime, callback) {
+          setTimeout(function() {
             // TODO(kpreid): correct error response (define one if needed)
-            callback({})
-          }, 0)
+            callback({});
+          }, 0);
         }
       },
       'ALL': {
-        'rewrite': function (uri) { return String(uri) },
+        'rewrite': function (uri) { return String(uri); },
         'fetch': proxyFetchMaker(undefined)
       },
       'only': policyOnly
@@ -108,7 +108,7 @@ var caja = (function () {
     'ATTRIBUTETYPES': undefined,
     'LOADERTYPES': undefined,
     'URIEFFECTS': undefined
-  }
+  };
 
   var caja = {
     // Normal entry points
@@ -171,7 +171,7 @@ var caja = (function () {
 
     // unused, removed by Closure
     closureCanary: 1
-  }
+  };
 
   // Internal functions made available to FrameGroup maker
   var cajaInt = {
@@ -183,100 +183,100 @@ var caja = (function () {
     'prepareContainerDiv': prepareContainerDiv,
     'unregister': unregister,
     'readPropertyAsHostFrame': readPropertyAsHostFrame
-  }
+  };
 
-  // ----------------
+  //----------------
 
-  function makeLogMethod (m) {
-    return function () {
+  function makeLogMethod(m) {
+    return function() {
       globalConfig &&
-        globalConfig.console[m].apply(globalConfig.console, arguments)
-    }
+        globalConfig.console[m].apply(globalConfig.console, arguments);
+    };
   }
 
-  function premature () {
-    throw new Error('Calling taming function before Caja is ready')
+  function premature() {
+    throw new Error('Calling taming function before Caja is ready');
   }
 
-  function disableSecurityForDebugger (value) {
-    unsafe = !!value
+  function disableSecurityForDebugger(value) {
+    unsafe = !!value;
     if (defaultFrameGroup) {
-      defaultFrameGroup['disableSecurityForDebugger'](value)
+      defaultFrameGroup['disableSecurityForDebugger'](value);
     }
   }
 
   /**
    * Returns a URI policy that allows one URI and denies the rest.
    */
-  function policyOnly (allowedUri) {
-    allowedUri = String(allowedUri)
+  function policyOnly(allowedUri) {
+    allowedUri = String(allowedUri);
     return {
       'rewrite': function (uri) {
-        uri = String(uri)
-        return uri === allowedUri ? uri : null
+        uri = String(uri);
+        return uri === allowedUri ? uri : null;
       }
-    }
+    };
   }
 
   /**
    * Creates the default frameGroup with the given config.
    * See {@code makeFrameGroup} for config parameters.
    */
-  function initialize (config /*, opt_onSuccess, opt_onFailure */) {
+  function initialize(config /*, opt_onSuccess, opt_onFailure */) {
     if (state !== UNREADY) {
-      throw new Error('Caja cannot be initialized more than once')
+      throw new Error('Caja cannot be initialized more than once');
     }
-    var onSuccess = arguments[1]
-    var onFailure = arguments[2]
-    state = PENDING
+    var onSuccess = arguments[1];
+    var onFailure = arguments[2];
+    state = PENDING;
     makeFrameGroup(config, function (frameGroup, es5Mode) {
-      defaultFrameGroup = frameGroup
-      caja['iframe'] = frameGroup['iframe']
-      caja['USELESS'] = frameGroup['USELESS']
+      defaultFrameGroup = frameGroup;
+      caja['iframe'] = frameGroup['iframe'];
+      caja['USELESS'] = frameGroup['USELESS'];
       for (var i in caja) {
         if (caja[i] === premature) {
-          caja[i] = frameGroup[i]
+          caja[i] = frameGroup[i];
         }
       }
-      frameGroup['disableSecurityForDebugger'](unsafe)
-      state = READY
-      var detail = {}
-      detail['es5Mode'] = es5Mode
-      if (typeof onSuccess === 'function') {
-        onSuccess(detail)
+      frameGroup['disableSecurityForDebugger'](unsafe);
+      state = READY;
+      var detail = {};
+      detail['es5Mode'] = es5Mode;
+      if ("function" === typeof onSuccess) {
+        onSuccess(detail);
       }
-      whenReady(null)
-    }, function (err) {
-      state = UNREADY
-      onFailure(err)
-    })
+      whenReady(null);
+    }, function(err) {
+      state = UNREADY;
+      onFailure(err);
+    });
   }
 
   /**
    * Creates a guest frame in the default frameGroup.
    */
-  function load (div, uriPolicy, loadDone, domOpts) {
-    uriPolicy = uriPolicy || caja['policy']['net']['NO_NETWORK']
+  function load(div, uriPolicy, loadDone, domOpts) {
+    uriPolicy = uriPolicy || caja['policy']['net']['NO_NETWORK'];
     if (state === UNREADY) {
-      initialize({})
+      initialize({});
     }
     whenReady(function () {
-      defaultFrameGroup['makeES5Frame'](div, uriPolicy, loadDone, domOpts)
-    })
+      defaultFrameGroup['makeES5Frame'](div, uriPolicy, loadDone, domOpts);
+    });
   }
 
   /**
    * Defers func until the default frameGroup is ready.
    */
-  function whenReady (opt_func) {
+  function whenReady(opt_func) {
     if (typeof opt_func === 'function') {
-      readyQueue.push(opt_func)
+      readyQueue.push(opt_func);
     }
     if (state === READY) {
       for (var i = 0; i < readyQueue.length; i++) {
-        setTimeout(readyQueue[i], 0)
+        setTimeout(readyQueue[i], 0);
       }
-      readyQueue = []
+      readyQueue = [];
     }
   }
 
@@ -325,55 +325,55 @@ var caja = (function () {
    * @param frameGroupReady function to be called back with a reference to
    *     the newly created frame group.
    */
-  function makeFrameGroup (config, frameGroupReady, onFailure) {
-    initFeralFrame(window)
-    globalConfig = config = resolveConfig(config)
-    caja['server'] = config['server']
+  function makeFrameGroup(config, frameGroupReady, onFailure) {
+    initFeralFrame(window);
+    globalConfig = config = resolveConfig(config);
+    caja['server'] = config['server'];
     if (config['es5Mode'] === false ||
         (config['es5Mode'] !== true && unableToSES())) {
-      initES53(config, frameGroupReady, onFailure)
+      initES53(config, frameGroupReady, onFailure);
     } else {
-      trySES(config, frameGroupReady, onFailure)
+      trySES(config, frameGroupReady, onFailure);
     }
   }
 
   /**
    * Returns a full config based on the given partial config.
    */
-  function resolveConfig (partial) {
-    partial = partial || {}
-    var full = {}
+  function resolveConfig(partial) {
+    partial = partial || {};
+    var full = {};
     full['server'] = String(
-      partial['server'] || partial['cajaServer'] || defaultServer)
-    full['resources'] = String(partial['resources'] || full['server'])
-    full['debug'] = !!partial['debug']
+      partial['server'] || partial['cajaServer'] || defaultServer);
+    full['resources'] = String(partial['resources'] || full['server']);
+    full['debug'] = !!partial['debug'];
     // Full config no longer has forceES5Mode
     // forceES5Mode passes it's value on to es5Mode and maxAcceptableSeverity
     if ('forceES5Mode' in partial && 'es5Mode' in partial) {
       throw new Error(
-        'Cannot use both forceES5Mode and es5Mode in the same config')
+        'Cannot use both forceES5Mode and es5Mode in the same config');
     }
     if (partial['forceES5Mode'] !== undefined) {
-      full['es5Mode'] = !!partial['forceES5Mode']
-      full['maxAcceptableSeverity'] = 'NOT_ISOLATED'
+      full['es5Mode'] = !!partial['forceES5Mode'];
+      full['maxAcceptableSeverity'] = 'NOT_ISOLATED';
     } else {
       full['es5Mode'] =
-        partial['es5Mode'] === undefined ? GUESS : !!partial['es5Mode']
+        partial['es5Mode'] === undefined ? GUESS : !!partial['es5Mode'];
       var severity = String(partial['maxAcceptableSeverity'] ||
-          'SAFE_SPEC_VIOLATION')
+          'SAFE_SPEC_VIOLATION');
       if (severity === 'NO_KNOWN_EXPLOIT_SPEC_VIOLATION') {
         // Special severity level which SES itself no longer implements
         // TODO(kpreid): Should acceptNoKnownExploitProblems be part of our
         // public interface?
-        severity = 'SAFE_SPEC_VIOLATION'
-        full['acceptNoKnownExploitProblems'] = true
+        severity = 'SAFE_SPEC_VIOLATION';
+        full['acceptNoKnownExploitProblems'] = true;
       }
-      full['maxAcceptableSeverity'] = severity
+      full['maxAcceptableSeverity'] = severity;
     }
 
     if (partial['console']) {
       // Client supplies full 'console' object, which we use
-      full['console'] = partial['console']
+      full['console'] = partial['console'];
     } else if (partial['log']) {
       // Deprecated API: Client supplies 'log' function, from which we
       // build a 'console' object of sorts
@@ -382,63 +382,63 @@ var caja = (function () {
         'warn': partial['log'],
         'error': partial['log'],
         'info': partial['log']
-      }
-    } else if (window['console'] &&
-        typeof (window['console']['log']) === 'function') {
+      };
+    } else if (window['console']
+        && typeof(window['console']['log']) === 'function') {
       // Platform supplies console object, which we use
-      full['console'] = window['console']
+      full['console'] = window['console'];
     } else {
       // Cannot find any logging functions; create no-op stubs
       full['console'] = {
-        'log': function () {},
-        'warn': function () {},
-        'error': function () {},
-        'info': function () {}
-      }
+        'log': function() {},
+        'warn': function() {},
+        'error': function() {},
+        'info': function() {}
+      };
     }
 
     if (partial['targetAttributePresets']) {
       if (!partial['targetAttributePresets']['default']) {
-        throw 'targetAttributePresets must contain a default'
+        throw 'targetAttributePresets must contain a default';
       }
       if (!partial['targetAttributePresets']['whitelist']) {
-        throw 'targetAttributePresets must contain a whitelist'
+        throw 'targetAttributePresets must contain a whitelist';
       }
       if (partial['targetAttributePresets']['whitelist']['length'] === 0) {
-        throw 'targetAttributePresets.whitelist array must be nonempty'
+        throw 'targetAttributePresets.whitelist array must be nonempty';
       }
-      full['targetAttributePresets'] = partial['targetAttributePresets']
+      full['targetAttributePresets'] = partial['targetAttributePresets'];
     }
-    if (typeof (partial['cajolingServiceClient']) === 'object') {
-      full['cajolingServiceClient'] = partial['cajolingServiceClient']
+    if (typeof(partial['cajolingServiceClient']) === 'object'){
+      full['cajolingServiceClient'] = partial['cajolingServiceClient'];
     }
-    return full
+    return full;
   }
 
-  function initFeralFrame (feralWin) {
+  function initFeralFrame(feralWin) {
     if (feralWin['Object']['FERAL_FRAME_OBJECT___'] === feralWin['Object']) {
-      return
+      return;
     }
-    feralWin['___'] = {}
-    feralWin['Object']['FERAL_FRAME_OBJECT___'] = feralWin['Object']
+    feralWin['___'] = {};
+    feralWin['Object']['FERAL_FRAME_OBJECT___'] = feralWin['Object'];
   }
 
-  // ----------------
+  //----------------
 
-  function initES53 (config, frameGroupReady, onFailure) {
+  function initES53(config, frameGroupReady, onFailure) {
     // TODO(felix8a): with api change, can start cajoler early too
-    var guestMaker = makeFrameMaker(config, 'es53-guest-frame')
+    var guestMaker = makeFrameMaker(config, 'es53-guest-frame');
     loadCajaFrame(config, 'es53-taming-frame', function (tamingWin) {
       var fg = tamingWin['ES53FrameGroup'](
-        cajaInt, config, tamingWin, window, guestMaker)
-      frameGroupReady(fg, false /* es5Mode */)
-    })
+          cajaInt, config, tamingWin, window, guestMaker);
+      frameGroupReady(fg, false /* es5Mode */);
+    });
   }
 
-  function trySES (config, frameGroupReady, onFailure) {
-    function frameInit (frameWin) {
-      var ses = frameWin['ses'] || (frameWin['ses'] = {})
-      ses['maxAcceptableSeverityName'] = config['maxAcceptableSeverity']
+  function trySES(config, frameGroupReady, onFailure) {
+    function frameInit(frameWin) {
+      var ses = frameWin['ses'] || (frameWin['ses'] = {});
+      ses['maxAcceptableSeverityName'] = config['maxAcceptableSeverity'];
       if (config['acceptNoKnownExploitProblems']) {
         ses['acceptableProblems'] = {
           'DEFINING_READ_ONLY_PROTO_FAILS_SILENTLY': { 'permit': true },
@@ -466,135 +466,135 @@ var caja = (function () {
           // compatible with ES5 implementations that follow that
           // recommendation.
           'NESTED_STRICT_FUNCTIONS_LEAK': { 'permit': true }
-        }
+        };
       }
-      ses['mitigateSrcGotchas'] = function () {
+      ses['mitigateSrcGotchas'] = function() {
         throw new EvalError('This function is a placeholder that should ' +
                             'have been replaced by the real ' +
-                            'ses.mitigateSrcGotchas.')
-      }
+                            'ses.mitigateSrcGotchas.');
+      };
     }
 
-    var sesMaker = makeFrameMaker(config, 'ses-single-frame', frameInit)
+    var sesMaker = makeFrameMaker(config, 'ses-single-frame', frameInit);
 
     loadCajaFrame(config, 'utility-frame', function (mitigateWin) {
-      var mitigateSrcGotchas = mitigateWin['ses']['mitigateSrcGotchas']
+      var mitigateSrcGotchas = mitigateWin['ses']['mitigateSrcGotchas'];
       sesMaker['make'](function (tamingWin) {
-        var mustSES = config['es5Mode'] === true
+        var mustSES = config['es5Mode'] === true;
         if (tamingWin['ses']['ok']()) {
           var fg = tamingWin['SESFrameGroup'](
-            cajaInt, config, tamingWin, window,
-            { 'mitigateSrcGotchas': mitigateSrcGotchas })
-          frameGroupReady(fg, true /* es5Mode */)
+              cajaInt, config, tamingWin, window,
+              { 'mitigateSrcGotchas': mitigateSrcGotchas });
+          frameGroupReady(fg, true /* es5Mode */);
         } else if (!mustSES) {
-          config['console']['log']('Unable to use SES.  Switching to ES53.')
+          config['console']['log']('Unable to use SES.  Switching to ES53.');
           // TODO(felix8a): set a cookie to remember this?
-          initES53(config, frameGroupReady, onFailure)
+          initES53(config, frameGroupReady, onFailure);
         } else {
-          var err = new Error('ES5 mode requested but browser is unsupported')
-          if (typeof onFailure === 'function') {
-            onFailure(err)
+          var err = new Error('ES5 mode requested but browser is unsupported');
+          if ("function" === typeof onFailure) {
+            onFailure(err);
           } else {
-            throw err
+            throw err;
           }
         }
-      })
-    })
+      });
+    });
   }
 
   // Fast rejection of SES.  If this works, repairES5 might still fail, and
   // we'll fall back to ES53 then.
-  function unableToSES () {
-    return !Object.getOwnPropertyNames
+  function unableToSES() {
+    return !Object.getOwnPropertyNames;
   }
 
-  // ----------------
+  //----------------
 
   /**
    * Returns an object that wraps loadCajaFrame() with preload support.
    * Calling frameMaker.preload() will start creation of a new frame now,
    * and make it available to a later call to frameMaker.make().
    */
-  function makeFrameMaker (config, filename, opt_frameCreated) {
-    var IDLE = 'IDLE', LOADING = 'LOADING', WAITING = 'WAITING'
-    var preState = IDLE, preWin, preReady
+  function makeFrameMaker(config, filename, opt_frameCreated) {
+    var IDLE = 'IDLE', LOADING = 'LOADING', WAITING = 'WAITING';
+    var preState = IDLE, preWin, preReady;
     var self = {
       'preload': function () {
         if (preState === IDLE) {
-          preState = LOADING
-          preWin = null
+          preState = LOADING;
+          preWin = null;
           loadCajaFrame(config, filename, function (win) {
-            preWin = win
-            consumeIfReady()
-          }, opt_frameCreated)
+            preWin = win;
+            consumeIfReady();
+          }, opt_frameCreated);
         }
       },
       'make': function (onReady) {
         if (preState === LOADING) {
-          preState = WAITING
-          preReady = onReady
-          consumeIfReady()
+          preState = WAITING;
+          preReady = onReady;
+          consumeIfReady();
         } else {
-          loadCajaFrame(config, filename, onReady, opt_frameCreated)
+          loadCajaFrame(config, filename, onReady, opt_frameCreated);
         }
       }
-    }
-    self['preload']()
-    return self
+    };
+    self['preload']();
+    return self;
 
-    function consumeIfReady () {
+    function consumeIfReady() {
       if (preState === WAITING && preWin) {
-        var win = preWin, ready = preReady
-        preState = IDLE
-        preWin = null
-        preReady = null
-        ready(win)
+        var win = preWin, ready = preReady;
+        preState = IDLE;
+        preWin = null;
+        preReady = null;
+        ready(win);
       }
     }
   }
 
-  // ----------------
+  //----------------
 
-  function loadCajaFrame (config, filename, frameReady, opt_frameCreated) {
-    var frameWin = createFrame(filename)
+  function loadCajaFrame(config, filename, frameReady, opt_frameCreated) {
+    var frameWin = createFrame(filename);
     // debuggable or minified.  ?debug=1 inhibits compilation in shindig
-    var suffix = config['debug'] ? '.js?debug=1' : '.opt.js?debug=1'
+    var suffix = config['debug'] ? '.js?debug=1' : '.opt.js?debug=1';
     var url = joinUrl(
       config['resources'],
-      cajaBuildVersion + '/' + filename + suffix)
+      cajaBuildVersion + '/' + filename + suffix);
     // The particular interleaving of async events shown below has been found
     // necessary to get the right behavior on Firefox 3.6. Otherwise, the
     // iframe silently fails to invoke the cajaIframeDone___ callback.
     setTimeout(function () {
       frameWin['cajaIframeDone___'] = function () {
-        versionCheck(config, frameWin, filename)
-        frameReady(frameWin)
-      }
-      if (opt_frameCreated) { opt_frameCreated(frameWin) }
+        versionCheck(config, frameWin, filename);
+        frameReady(frameWin);
+      };
+      if (opt_frameCreated) { opt_frameCreated(frameWin); }
       // TODO(jasvir): Test what the latency doing this on all browsers is
       // and why its necessary
       setTimeout(function () {
-        installAsyncScript(frameWin, url)
-      }, 0)
-    }, 0)
+        installAsyncScript(frameWin, url);
+      }, 0);
+    }, 0);
   }
 
   // Throws an error if frameWin has the wrong Caja version
-  function versionCheck (config, frameWin, filename) {
+  function versionCheck(config, frameWin, filename) {
     if (cajaBuildVersion !== frameWin['cajaBuildVersion']) {
       var message = 'Version error: caja.js version ' + cajaBuildVersion +
         ' does not match ' + filename + ' version ' +
-        frameWin['cajaBuildVersion'] + '.'
+        frameWin['cajaBuildVersion'] + '.';
 
-      var majorCajaVersion = String(cajaBuildVersion).split(/[mM]/)[0]
+      var majorCajaVersion = String(cajaBuildVersion).split(/[mM]/)[0];
       var majorWinVersion =
-        String(frameWin['cajaBuildVersion']).split(/[mM]/)[0]
+        String(frameWin['cajaBuildVersion']).split(/[mM]/)[0];
       if (majorCajaVersion === majorWinVersion) {
-        message += '  Continuing because major versions match.'
-        config['console']['log'](message)
+        message += '  Continuing because major versions match.';
+        config['console']['log'](message);
       } else {
-        config['console']['log'](message)
-        throw new Error(message)
+        config['console']['log'](message);
+        throw new Error(message);
       }
     }
   }
@@ -603,90 +603,90 @@ var caja = (function () {
    * opt_container may be absent, an element, or a Document. If absent
    * then no DOM or related APIs are given to the guest.
    */
-  function prepareContainerDiv (opt_container, feralWin, domOpts) {
-    domOpts = domOpts || {}
-    var opt_idClass = domOpts ? domOpts['idClass'] : void 0
-    var idClass = opt_idClass || ('caja-guest-' + nextId++ + '___')
+  function prepareContainerDiv(opt_container, feralWin, domOpts) {
+    domOpts = domOpts || {};
+    var opt_idClass = domOpts ? domOpts['idClass'] : void 0;
+    var idClass = opt_idClass || ('caja-guest-' + nextId++ + '___');
     if (opt_container && opt_container.nodeType === 9 /* Document */) {
       caja['console']['warn']('Warning: Using a document, rather than an ' +
           'element, as a Caja virtual document container is an experimental ' +
-          'feature and may not operate correctly or support all features.')
-      initFeralFrame(opt_container.defaultView)
+          'feature and may not operate correctly or support all features.');
+      initFeralFrame(opt_container.defaultView);
     }
     return {
       'idClass': idClass,
       'opt_div': opt_container
-    }
+    };
   }
 
   // Creates a new iframe and returns its contentWindow.
-  function createFrame (opt_className) {
-    var frame = document.createElement('iframe')
-    frame.style.display = 'none'
-    frame.width = 0
-    frame.height = 0
-    frame.className = opt_className || ''
-    var where = document.getElementsByTagName('script')[0]
-    where.parentNode.insertBefore(frame, where)
-    return frame.contentWindow
+  function createFrame(opt_className) {
+    var frame = document.createElement('iframe');
+    frame.style.display = "none";
+    frame.width = 0;
+    frame.height = 0;
+    frame.className = opt_className || '';
+    var where = document.getElementsByTagName('script')[0];
+    where.parentNode.insertBefore(frame, where);
+    return frame.contentWindow;
   }
 
-  function installAsyncScript (frameWin, scriptUrl) {
-    var frameDoc = frameWin['document']
-    var script = frameDoc.createElement('script')
-    script.setAttribute('type', 'text/javascript')
-    script.src = scriptUrl
-    frameDoc.body.appendChild(script)
+  function installAsyncScript(frameWin, scriptUrl) {
+    var frameDoc = frameWin['document'];
+    var script = frameDoc.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+    script.src = scriptUrl;
+    frameDoc.body.appendChild(script);
   }
 
   // TODO(jasvir): This should pulled into a utility js file
-  function escapeAttr (s) {
-    var ampRe = /&/g
-    var ltRe = /[<]/g
-    var gtRe = />/g
-    var quotRe = /\"/g
+  function escapeAttr(s) {
+    var ampRe = /&/g;
+    var ltRe = /[<]/g;
+    var gtRe = />/g;
+    var quotRe = /\"/g;
     return ('' + s).replace(ampRe, '&amp;')
       .replace(ltRe, '&lt;')
       .replace(gtRe, '&gt;')
-      .replace(quotRe, '&#34;')
+      .replace(quotRe, '&#34;');
   }
 
-  function installSyncScript (name, url) {
-    if (!loaderDocument) {
-      loaderDocument = createFrame('loader-frame').document
-    }
-    // TODO(jasvir): This assignment pins the parent's handler
-    // function and, iiuc, this reference is never cleared out.
-    var result = '' +
-       ('<script>var $name = parent.window["$name"];<\/script>'
-         .replace(/[$]name/g, name)) +
-       ('<script type="text/javascript" src="$url"><\/script>'
-         .replace(/[$]url/g, escapeAttr(url)))
-    loaderDocument.write(result)
+  function installSyncScript(name, url) {
+     if (!loaderDocument) {
+       loaderDocument = createFrame('loader-frame').document;
+     }
+     // TODO(jasvir): This assignment pins the parent's handler
+     // function and, iiuc, this reference is never cleared out.
+     var result = ''
+       + ('<script>var $name = parent.window["$name"];<\/script>'
+           .replace(/[$]name/g, name))
+       + ('<script type="text/javascript" src="$url"><\/script>'
+           .replace(/[$]url/g, escapeAttr(url)));
+     loaderDocument.write(result);
+   }
+
+  function joinUrl(base, path) {
+    base = base.replace(/\/+$/, '');
+    path = path.replace(/^\/+/, '');
+    return base + '/' + path;
   }
 
-  function joinUrl (base, path) {
-    base = base.replace(/\/+$/, '')
-    path = path.replace(/^\/+/, '')
-    return base + '/' + path
-  }
-
-  function documentBaseUrl () {
-    var bases = document.getElementsByTagName('base')
+  function documentBaseUrl() {
+    var bases = document.getElementsByTagName('base');
     if (bases.length == 0) {
-      return document.location.toString()
+      return document.location.toString();
     } else if (bases.length == 1) {
-      var href = bases[0].href
+      var href = bases[0].href;
       if (typeof href !== 'string') {
-        throw new Error('Caja loader error: <base> without a href.')
+        throw new Error('Caja loader error: <base> without a href.');
       }
-      return href
+      return href;
     } else {
-      throw new Error('Caja loader error: document contains multiple <base>.')
+      throw new Error('Caja loader error: document contains multiple <base>.');
     }
   }
 
-  // ----------------
+  //----------------
 
   /**
    * Enforces {@code typeof specimen === typename}, in which case
@@ -697,12 +697,12 @@ var caja = (function () {
    * opt_name, if provided, should be a name or description of the
    * specimen used only to generate friendlier error messages.
    */
-  function enforceType (specimen, typename, opt_name) {
+  function enforceType(specimen, typename, opt_name) {
     if (typeof specimen !== typename) {
       throw new TypeError('expected ' + typename + ' instead of ' +
-          typeof specimen + ': ' + (opt_name || specimen))
+          typeof specimen + ': ' + (opt_name || specimen));
     }
-    return specimen
+    return specimen;
   }
 
   /**
@@ -710,8 +710,8 @@ var caja = (function () {
    * around browser bugs where the answer depends on who's asking the
    * question.
    */
-  function readPropertyAsHostFrame (object, property) {
-    return object[property]
+  function readPropertyAsHostFrame(object, property) {
+    return object[property];
   }
 
   /**
@@ -741,16 +741,16 @@ var caja = (function () {
    * registered, or that has been <tt>unregister</tt>ed since the last
    * time it was registered, will still be garbage collectable.
    */
-  function getId (imports) {
-    enforceType(imports, 'object', 'imports')
-    var id
+  function getId(imports) {
+    enforceType(imports, 'object', 'imports');
+    var id;
     if ('id___' in imports) {
-      id = enforceType(imports['id___'], 'number', 'id')
+      id = enforceType(imports['id___'], 'number', 'id');
     } else {
-      id = imports['id___'] = registeredImports.length
+      id = imports['id___'] = registeredImports.length;
     }
-    registeredImports[id] = imports
-    return id
+    registeredImports[id] = imports;
+    return id;
   }
 
   /**
@@ -759,12 +759,12 @@ var caja = (function () {
    * If it has been <tt>unregistered</tt> since the last
    * <tt>getId</tt> on it, then <tt>getImports</tt> will fail.
    */
-  function getImports (id) {
-    var result = registeredImports[enforceType(id, 'number', 'id')]
+  function getImports(id) {
+    var result = registeredImports[enforceType(id, 'number', 'id')];
     if (result === void 0) {
-      throw new Error('Internal: imports#', id, ' unregistered')
+      throw new Error('Internal: imports#', id, ' unregistered');
     }
-    return result
+    return result;
   }
 
   /**
@@ -776,18 +776,18 @@ var caja = (function () {
    * remembers its id. If asked for another <tt>getId</tt>, it
    * reregisters itself at its old id.
    */
-  function unregister (imports) {
-    enforceType(imports, 'object', 'imports')
+  function unregister(imports) {
+    enforceType(imports, 'object', 'imports');
     if ('id___' in imports) {
-      var id = enforceType(imports['id___'], 'number', 'id')
-      registeredImports[id] = void 0
+      var id = enforceType(imports['id___'], 'number', 'id');
+      registeredImports[id] = void 0;
     }
   }
 
-  return caja
-})()
+  return caja;
+})();
 
 // Exports for closure compiler.
 if (typeof window !== 'undefined') {
-  window['caja'] = caja
+  window['caja'] = caja;
 }

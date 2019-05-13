@@ -26,7 +26,7 @@ export class Track {
     })
 
     Object.defineProperty(this, 'deviceChain', {
-      value: new Rx.BehaviorSubject([]),
+      value: new Rx.BehaviorSubject([device]),
       writable: false,
       enumerable: true,
       configurable: false
@@ -41,8 +41,8 @@ export class Track {
     this.clips.next(clips)
   }
 
-  getActiveClip () {
-    return this.clips[0] // TODO:
+  get activeClip () {
+    return this.clips.value[0] // TODO:
   }
 
   render () {
@@ -50,28 +50,5 @@ export class Track {
     let node = new Tone.AudioNode()
 
     return node
-  }
-
-  scheduleEvents () {
-    const Tone = require('tone')
-    let events = new Tone.Part()
-
-    for (let item of this.arrangement) {
-      let clip = this.clips[item.clipId]
-      let events = clip.events
-
-      let offset = item.offset
-      let duration = item.duration
-
-      let part = new Tone.Part((time, event) => {
-        this.device.triggerAttackRelease(event.note, event.duration, time, event.velocity)
-      }, events)
-        .start(0)
-        .stop(duration)
-
-      events.add(offset, part)
-    }
-
-    return events
   }
 }

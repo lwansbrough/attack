@@ -38,15 +38,17 @@ export class Project {
     this.tracks.next(tracks)
   }
 
-  render () {
+  scheduleEvents (time = 0) {
     const Tone = require('tone')
-    let node = new Tone.AudioNode()
-
+    let parts = []
     for (let track of this.tracks.value) {
-      let trackNode = track.renderNode()
-      trackNode.connect(node)
+      let device = track.deviceChain.value.reduce((chain, d) => chain.connect(d), new Tone.AudioNode())
+      let part = track.activeClip.getPart(device)
+      parts.push(part)
     }
 
-    return node
+    for (let part of parts) {
+      part.start(time)
+    }
   }
 }

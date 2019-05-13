@@ -10,6 +10,7 @@ const actions = {
   },
   start (context) {
     context.commit('start')
+    context.rootState['daw/workspace'].project.scheduleEvents()
   },
   setBPM (context, bpm) {
     context.commit('setBPM', bpm)

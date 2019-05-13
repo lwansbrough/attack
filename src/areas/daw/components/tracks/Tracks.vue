@@ -43,8 +43,11 @@ export default {
   },
   methods: {
     addTrack () {
-      let track = new Track()
+      const Tone = require('tone')
+      let synth = new Tone.Synth()
+      let track = new Track(synth)
       this.project.addTrack(track)
+      synth.connect(Tone.Master)
       this.$store.dispatch('daw/workspace/setCurrentTrack', track.id)
     },
     setCurrentTrack (trackId) {
